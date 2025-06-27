@@ -1,0 +1,40 @@
+{
+  "invoice": {
+    "issuer": {
+      "irsId": "99999990S",
+      "name": "Mi Empresa S.L."
+    },
+    "recipient": {
+      "irsId": "B87654321",
+      "name": "Cliente Ejemplo S.A.",
+      "country": "ES"
+    },
+    "id": {
+      "number": "FAC-2024-001",
+      "issuedTime": "2024-06-27T10:00:00.000Z"
+    },
+    "type": "F1",
+    "description": {
+      "text": "Servicios de consultoría tecnológica",
+      "operationDate": "2024-06-27T09:00:00.000Z"
+    },
+    "vatLines": [
+      {
+        "vatOperation": "S1",
+        "base": 1000.00,
+        "rate": 21,
+        "amount": 210.00,
+        "vatKey": "01"
+      }
+    ],
+    "total": 1210.00,
+    "amount": 210.00
+  },
+  "previousInvoice": {
+    "issuerIrsId": "99999990S",
+    "number": "FAC-2024-000",
+    "issuedTime": "2024-06-26T10:00:00.000Z",
+    "hash": "abc123def456789012345678901234567890abcdef123456789012345678901234"
+  },
+  "testing": true
+}

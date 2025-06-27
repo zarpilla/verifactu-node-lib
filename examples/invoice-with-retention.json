@@ -1,0 +1,53 @@
+{
+  "invoice": {
+    "issuer": {
+      "irsId": "B87654321",
+      "name": "Empresa de Servicios Profesionales S.L."
+    },
+    "recipient": {
+      "irsId": "12345678Z",
+      "name": "Juan Pérez García"
+    },
+    "id": {
+      "number": "FAC-2025-001",
+      "issuedTime": "2025-01-15T10:30:00.000Z"
+    },
+    "type": "F1",
+    "description": {
+      "text": "Servicios de consultoría profesional con retención IRPF",
+      "operationDate": "2025-01-15T00:00:00.000Z"
+    },
+    "vatLines": [
+      {
+        "base": 1000.00,
+        "rate": 21,
+        "amount": 210.00,
+        "vatOperation": "S1",
+        "vatKey": "01",
+        "tax": "01"
+      }
+    ],
+    "retentionLines": [
+      {
+        "base": 1000.00,
+        "rate": 15,
+        "amount": 150.00
+      }
+    ],
+    "amount": 210.00,
+    "total": 1060.00,
+    "issuedBy": "N"
+  },
+  "software": {
+    "developerName": "Mi Empresa Desarrollo",
+    "developerIrsId": "B12345678",
+    "name": "Mi Software VeriFacTu",
+    "id": "SOFT001",
+    "version": "1.0.0",
+    "number": "001",
+    "useOnlyVerifactu": true,
+    "useMulti": false,
+    "useCurrentMulti": false
+  },
+  "previousId": null
+}

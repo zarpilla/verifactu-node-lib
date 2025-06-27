@@ -1,0 +1,28 @@
+{
+  "invoice": {
+    "issuer": {
+      "irsId": "99999990S",
+      "name": "Mi Empresa S.L."
+    },
+    "id": {
+      "number": "SIMP-001",
+      "issuedTime": "2024-06-27T14:00:00.000Z"
+    },
+    "type": "F2",
+    "description": {
+      "text": "Venta en mostrador"
+    },
+    "vatLines": [
+      {
+        "vatOperation": "S1",
+        "base": 50.00,
+        "rate": 21,
+        "amount": 10.50,
+        "vatKey": "01"
+      }
+    ],
+    "total": 60.50,
+    "amount": 10.50
+  },
+  "testing": true
+}

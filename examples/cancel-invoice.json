@@ -1,0 +1,18 @@
+{
+  "cancelInvoice": {
+    "issuer": {
+      "irsId": "99999990S",
+      "name": "Mi Empresa S.L."
+    },
+    "id": {
+      "number": "FAC-2024-001",
+      "issuedTime": "2024-06-27T10:00:00.000Z"
+    }
+  },
+  "previousInvoice": {
+    "issuerIrsId": "99999990S",
+    "number": "FAC-2024-001",
+    "issuedTime": "2024-06-27T10:00:00.000Z",
+    "hash": "def456abc789012345678901234567890abcdef123456789012345678901234"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "invoice": {
+    "issuer": {
+      "irsId": "B12345678",
+      "name": "Empresa Ejemplo S.L."
+    },
+    "recipient": {
+      "irsId": "12345678Z",
+      "name": "Cliente Ejemplo"
+    },
+    "id": {
+      "number": "FAC-2024-001",
+      "issuedTime": "2024-01-15T10:30:00.000Z"
+    },
+    "type": "F1",
+    "description": {
+      "text": "Servicios profesionales con retención IRPF",
+      "operationDate": "2024-01-15T00:00:00.000Z"
+    },
+    "vatLines": [
+      {
+        "base": 1000.00,
+        "rate": 21.00,
+        "amount": 210.00,
+        "vatOperation": "S1",
+        "vatKey": "01",
+        "tax": "01"
+      }
+    ],
+    "retentionLines": [
+      {
+        "base": 1000.00,
+        "rate": 15.00,
+        "amount": 150.00
+      }
+    ],
+    "amount": 210.00,
+    "total": 1060.00
+  },
+  "software": {
+    "developerName": "Desarrollador Ejemplo",
+    "developerIrsId": "B87654321",
+    "name": "Software VeriFacTu",
+    "id": "SOFT001",
+    "version": "1.0.0",
+    "number": "001",
+    "useOnlyVerifactu": true,
+    "useMulti": false,
+    "useCurrentMulti": false
+  }
+}
