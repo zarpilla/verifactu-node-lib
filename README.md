@@ -15,7 +15,7 @@ Una librería JavaScript/TypeScript para generar facturas electrónicas compatib
 ## Instalación
 
 ```bash
-npm install verifactu-lib
+npm install verifactu-node-lib
 ```
 
 ## Uso Básico
@@ -23,7 +23,7 @@ npm install verifactu-lib
 ### Crear una factura
 
 ```typescript
-import { createVerifactuInvoice, Invoice, Software } from 'verifactu-lib';
+import { createVerifactuInvoice, Invoice, Software } from 'verifactu-node-lib';
 
 // Configuración del software
 const software: Software = {
@@ -82,7 +82,7 @@ console.log('Info encadenamiento:', result.chainInfo);
 ### Anular una factura
 
 ```typescript
-import { cancelVerifactuInvoice, CancelInvoice } from 'verifactu-lib';
+import { cancelVerifactuInvoice, CancelInvoice } from 'verifactu-node-lib';
 
 const cancelInvoice: CancelInvoice = {
     issuer: {
@@ -102,7 +102,7 @@ console.log('Factura anulada:', result.chainInfo);
 ### Factura con encadenamiento
 
 ```typescript
-import { PreviousInvoiceId } from 'verifactu-lib';
+import { PreviousInvoiceId } from 'verifactu-node-lib';
 
 // Información de la factura anterior
 const previousInvoice: PreviousInvoiceId = {
