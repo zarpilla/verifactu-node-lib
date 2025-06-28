@@ -348,6 +348,22 @@ function getVerifactuUrl(xml: any, isTesting = false): string {
     return `${prefix}?${params.toString()}`;
 }
 
+function completeXml(xml: string, vat: string, name: string): string {
+    return `<sum:RegFactuSistemaFacturacion
+        xmlns:sum="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroLR.xsd"
+        xmlns="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroInformacion.xsd">
+        <sum:Cabecera>
+            <ObligadoEmision>
+                <NombreRazon>${name}</NombreRazon>
+                <NIF>${vat}</NIF>
+            </ObligadoEmision>
+        </sum:Cabecera>
+        ${xml}
+    </sum:RegFactuSistemaFacturacion>`
+        .replace(/>\s+</g, "><")
+        .replace(/\s*xmlns/g, " xmlns");
+}
+
 function getChainInfo(xml: any): PreviousInvoiceId {
     function getIssuedDate(): Date {
         const d = getText(xml, "IDFactura>FechaExpedicionFactura");
@@ -376,12 +392,24 @@ function getCancelChainInfo(xml: any): PreviousInvoiceId {
     };
 }
 
+function getWSInfo(isTesting: boolean): { wsld: string; endpoint: string } {
+    const wsld = isTesting
+        ? "https://prewww2.aeat.es/static_files/common/internet/dep/aplicaciones/es/aeat/tikeV1.0/cont/ws/SistemaFacturacion.wsdl"
+        : "https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tikeV1.0/cont/ws/SistemaFacturacion.wsdl";
+    
+    const endpoint = isTesting
+        ? "https://prewww2.aeat.es/wlpl/TIKE-CONT/ws/SistemaFacturacion/VerifactuSOAP"
+        : "https://www2.agenciatributaria.gob.es/wlpl/TIKE-CONT/ws/SistemaFacturacion/VerifactuSOAP";
+    
+    return { wsld, endpoint };
+}
+
 export async function createInvoice(
     invoice: Invoice,
     software: Software,
     previousId: PreviousInvoiceId | null = null,
     options: ToXmlOptions = {},
-    isTesting = false
+    isTesting = true
 ): Promise<VerifactuResult> {
     // Validaciones
     validateInvoice(invoice);
@@ -476,13 +504,16 @@ export async function createInvoice(
     const chainInfo = getChainInfo(xml);
     
     // Convertir XML a string y codificar en base64
-    const xmlString = new XMLSerializer().serializeToString(xml);
+    const xmlString = completeXml(new XMLSerializer().serializeToString(xml), toNifStr(invoice.issuer.irsId), toStr60(invoice.issuer.name));
     const verifactuXml = Buffer.from(xmlString).toString('base64');
-    
+    const { wsld, endpoint } = getWSInfo(isTesting);
+
     return {
         qrcode: qrcodeData,
         chainInfo,
-        verifactuXml
+        verifactuXml,
+        wsld,
+        endpoint
     };
 }
 
@@ -490,7 +521,8 @@ export async function cancelInvoice(
     cancelInvoice: CancelInvoice,
     software: Software,
     previousId: PreviousInvoiceId | null = null,
-    options: ToXmlOptions = {}
+    options: ToXmlOptions = {},
+    isTesting = true
 ): Promise<VerifactuResult> {
     // Validaciones
     validateCancelInvoice(cancelInvoice);
@@ -541,12 +573,15 @@ export async function cancelInvoice(
     const chainInfo = getCancelChainInfo(xml);
     
     // Convertir XML a string y codificar en base64
-    const xmlString = new XMLSerializer().serializeToString(xml);
+    const xmlString = completeXml(new XMLSerializer().serializeToString(xml), toNifStr(cancelInvoice.issuer.irsId), toStr60(cancelInvoice.issuer.name));
     const verifactuXml = Buffer.from(xmlString).toString('base64');
+    const { wsld, endpoint } = getWSInfo(isTesting);
     
     return {
         qrcode: null, // Las anulaciones no generan QR
         chainInfo,
-        verifactuXml
+        verifactuXml,
+        wsld,
+        endpoint
     };
 }

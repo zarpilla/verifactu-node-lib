@@ -137,4 +137,6 @@ export interface VerifactuResult {
     qrcode: string | null;
     chainInfo: PreviousInvoiceId;
     verifactuXml: string; // XML codificado en base64
+    wsld: string; // URL del WSDL del servicio
+    endpoint: string; // URL del endpoint del servicio
 }
