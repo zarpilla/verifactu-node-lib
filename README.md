@@ -204,10 +204,20 @@ const invoice: Invoice = {
 
 - `"01"`: Operación de régimen general
 - `"02"`: Exportación
-- `"03"`: Operaciones a las que se aplique el régimen especial de bienes usados
+- `"03"`: Operaciones a las que se aplique el régimen especial de bienes usados, objetos de arte, antigüedades y objetos de colección
 - `"04"`: Régimen especial del oro de inversión
 - `"05"`: Régimen especial de las agencias de viajes
-- ... [consultar documentación completa de la AEAT]
+- `"06"`: Régimen especial grupo de entidades en IGIC (Nivel Avanzado)
+- `"07"`: Régimen especial del criterio de caja
+- `"08"`: Operaciones sujetas al IPSI / IVA (Impuesto sobre la Producción, los Servicios y la Importación / Impuesto sobre el Valor Añadido)
+- `"09"`: Facturación de las prestaciones de servicios de agencias de viaje que actúan como mediadoras en nombre y por cuenta ajena (D.A.4ª RD1619/2012)
+- `"10"`: Cobros por cuenta de terceros de honorarios profesionales o de derechos derivados de la propiedad industrial, de autor u otros por cuenta de sus socios, asociados o colegiados efectuados por sociedades, asociaciones, colegios profesionales u otras entidades que realicen estas funciones de cobro
+- `"11"`: Operaciones de arrendamiento de local de negocio
+- `"14"`: Factura con IGIC pendiente de devengo en certificaciones de obra cuyo destinatario sea una Administración Pública
+- `"15"`: Factura con IGIC pendiente de devengo en operaciones de tracto sucesivo
+- `"17"`: Régimen especial de comerciante minorista
+- `"18"`: Régimen especial del pequeño empresario o profesional
+- `"19"`: Operaciones interiores exentas por aplicación artículo 25 Ley 19/1994
 
 ## Países Soportados
 
