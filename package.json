@@ -1,6 +1,6 @@
 {
   "name": "verifactu-node-lib",
-  "version": "1.0.0",
+  "version": "2025.06.28",
   "description": "Node.js library for generating VeriFacTu invoices compatible with AEAT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
