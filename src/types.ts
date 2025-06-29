@@ -22,6 +22,7 @@ export type TaxType = "01" | "02" | "03" | "05";
 export interface InvoiceId {
     number: string;
     issuedTime: Date;
+    replacement?: boolean; // Indicates if this is a replacement (subsanación) invoice
 }
 
 export interface PreviousInvoiceId {
@@ -139,4 +140,5 @@ export interface VerifactuResult {
     verifactuXml: string; // XML codificado en base64
     wsld: string; // URL del WSDL del servicio
     endpoint: string; // URL del endpoint del servicio
+    hash: string; // Hash del XML
 }

@@ -20,6 +20,7 @@ import {
     querySelector,
     querySelectorAll,
     removeElement,
+    toStr2,
     toStr20,
     toStr30,
     toStr50,
@@ -86,11 +87,10 @@ const VERIFACTU_INVOICE_XML_BASE = `
             <NumSerieFactura>????</NumSerieFactura>
             <FechaExpedicionFactura>????</FechaExpedicionFactura>
         </IDFactura>
-        <NombreRazonEmisor>????</NombreRazonEmisor>
-        <Subsanacion>S</Subsanacion>
-        <RechazoPrevio>X</RechazoPrevio>
+        <NombreRazonEmisor>????</NombreRazonEmisor>        
+        <Subsanacion>???</Subsanacion>
         <TipoFactura>F1</TipoFactura>
-        <TipoRectificativa/>
+        <TipoRectificativa>????</TipoRectificativa>
         <FacturasRectificadas/>
         <FacturasSustituidas/>
         <ImporteRectificacion/>
@@ -186,11 +186,11 @@ function addRecipientToXml(xml: any, recipient: Partner | undefined): void {
     
     const isIrs = 'irsId' in recipient;
     const template = isIrs ? `
-<IDDestinatario ${NS2}>
+<IDDestinatario>
     <NombreRazon></NombreRazon>
     <NIF></NIF>
 </IDDestinatario>` : `
-<IDDestinatario ${NS2}>
+<IDDestinatario>
     <NombreRazon></NombreRazon>
     <IDOtro>
         <CodigoPais></CodigoPais>
@@ -228,31 +228,43 @@ function addVatLinesToXml(xml: any, vatLines: VatLine[]): void {
     
     vatLines.forEach(vatLine => {
         const template = `
-<DetalleDesglose ${NS2}>
+<DetalleDesglose>
     <Impuesto></Impuesto>
     <ClaveRegimen></ClaveRegimen>
     <CalificacionOperacion></CalificacionOperacion>
     <OperacionExenta></OperacionExenta>
     <TipoImpositivo></TipoImpositivo>
-    <BaseImponible></BaseImponible>
+    <BaseImponibleOimporteNoSujeto></BaseImponibleOimporteNoSujeto>
     <TipoImpositivo2></TipoImpositivo2>
     <CuotaRecargoEquivalencia></CuotaRecargoEquivalencia>
     <TipoRecargoEquivalencia></TipoRecargoEquivalencia>
-    <CuotaImpuesto></CuotaImpuesto>
+    <CuotaRepercutida></CuotaRepercutida>
 </DetalleDesglose>`;
         
         const newXml = new DOMParser().parseFromString(template.replace(/>\s+</g, "><"), "application/xml");
-        
-        updateDocument(newXml, [
+        // TipoImpositivo, CuotaRepercutida, TipoRecargoEquivalencia y CuotaRecargoEquivalencia
+
+        if (vatLine.vatOperation.startsWith('S')) {
+            updateDocument(newXml, [
             ['Impuesto', vatLine.tax || '01', toString],
             ['ClaveRegimen', vatLine.vatKey, toString],
             ['CalificacionOperacion', vatLine.vatOperation, toString],
             ['TipoImpositivo', vatLine.rate, round2ToString],
-            ['BaseImponible', vatLine.base, round2ToString],
+            ['BaseImponibleOimporteNoSujeto', vatLine.base, round2ToString],
             ['TipoImpositivo2', vatLine.rate2, round2ToString],
             ['CuotaRecargoEquivalencia', vatLine.amount2, round2ToString],
-            ['CuotaImpuesto', vatLine.amount, round2ToString],
+            ['CuotaRepercutida', vatLine.amount, round2ToString],
         ]);
+        } else {
+            updateDocument(newXml, [
+            ['Impuesto', vatLine.tax || '01', toString],
+            ['ClaveRegimen', vatLine.vatKey, toString],
+            ['CalificacionOperacion', vatLine.vatOperation, toString],            
+            ['BaseImponibleOimporteNoSujeto', vatLine.base, round2ToString],
+            ['TipoImpositivo2', vatLine.rate2, round2ToString],
+        ]);
+        }
+        
         
         if (newXml.documentElement) {
             desglose.appendChild(newXml.documentElement);
@@ -318,7 +330,7 @@ async function generateHash(invoice: Invoice | CancelInvoice, dateGenReg: string
     
     const hash = crypto.createHash('sha256');
     hash.update(hashString, 'utf8');
-    return hash.digest('hex');
+    return hash.digest('hex').toUpperCase();
 }
 
 function getText(xml: any, selector: string): string {
@@ -339,7 +351,7 @@ function getVerifactuUrl(xml: any, isTesting = false): string {
     
     const params = new URLSearchParams({
         nif: issuer,
-        num: number,
+        numserie: number,
         fecha: date,
         importe: total,
         hash: hash.slice(-6) // últimos 6 caracteres del hash
@@ -349,19 +361,84 @@ function getVerifactuUrl(xml: any, isTesting = false): string {
 }
 
 function completeXml(xml: string, vat: string, name: string): string {
-    return `<sum:RegFactuSistemaFacturacion
-        xmlns:sum="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroLR.xsd"
-        xmlns="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroInformacion.xsd">
+
+
+    return `
+    <?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+xmlns:sum="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroLR.xsd" 
+xmlns:sum1="https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tike/cont/ws/SuministroInformacion.xsd" >
+  <soap:Body>
+    <sum:RegFactuSistemaFacturacion>
         <sum:Cabecera>
-            <ObligadoEmision>
-                <NombreRazon>${name}</NombreRazon>
-                <NIF>${vat}</NIF>
-            </ObligadoEmision>
+            <sum1:ObligadoEmision>
+                <sum1:NombreRazon>${name}</sum1:NombreRazon>
+                <sum1:NIF>${vat}</sum1:NIF>
+            </sum1:ObligadoEmision>
         </sum:Cabecera>
-        ${xml}
-    </sum:RegFactuSistemaFacturacion>`
+        ${completeXmlReplaces(xml)}
+    </sum:RegFactuSistemaFacturacion>
+    </soap:Body>
+</soap:Envelope>`
         .replace(/>\s+</g, "><")
-        .replace(/\s*xmlns/g, " xmlns");
+        .replace(/\s*xmlns/g, " xmlns")
+        ;
+}
+
+function completeXmlReplaces(xml: string): string {
+    // Add xmlns prefix to nodes without it
+    xml = AddXmlnsPrefixToNodesWithoutXmlnsPrefix(xml.replace(NS1, '')
+        .replace(NS2, ''), 'sum1');
+    
+    // Replace the empty nodes with empty strings
+    xml = replaceEmptyNodes(xml);
+
+    // Remove xmlns attributes from sum1 namespace
+    xml = xml.replace(/ xmlns="[^"]*"/g, '');
+    
+    // Remove xmlns attributes from sum namespace
+    xml = xml.replace(/ xmlns:sum="[^"]*"/g, '');
+    
+    xml = xml.replace(/<([^>]*?)\s+>/g, '<$1>');
+
+    return xml;
+}
+
+function replaceEmptyNodes(xml: string): string {
+    xml = replaceEmptyNode(xml, 'sum1:TipoRectificativa');
+    xml = replaceEmptyNode(xml, 'sum1:FacturasRectificadas');
+    xml = replaceEmptyNode(xml, 'sum1:FacturasSustituidas');
+    xml = replaceEmptyNode(xml, 'sum1:ImporteRectificacion');
+    xml = replaceEmptyNode(xml, 'sum1:FechaOperacion');
+    xml = replaceEmptyNode(xml, 'sum1:OperacionExenta');
+    xml = replaceEmptyNode(xml, 'sum1:TipoRecargoEquivalencia');
+    xml = replaceEmptyNode(xml, 'sum1:EmitidaPorTerceroODestinatario');
+    xml = replaceEmptyNode(xml, 'sum1:Subsanacion');
+    xml = replaceEmptyNode(xml, 'sum1:TipoImpositivo');
+    xml = replaceEmptyNode(xml, 'sum1:CuotaRepercutida');
+    return xml;
+}
+
+function replaceEmptyNode(xml: string, node: string): string {
+    // should replace <sum1:TipoRectificativa/> to ''
+    const regex = new RegExp(`<${node}[^>]*?/>`, 'g');
+    return xml.replace(regex, '');
+}
+
+// <sum1:TipoRectificativa/>
+
+function AddXmlnsPrefixToNodesWithoutXmlnsPrefix(xml: string, prefix: string): string {
+    // all tags like <TipoHuella> should be changed to <prefix:TipoHuella> . Also, 
+    // </TipoHuella> should be changed to </prefix:TipoHuella>    
+    //  Tags with other prefixes should not be changed.
+    
+    // Replace opening tags that don't have a namespace prefix (no colon in the tag name)
+    xml = xml.replace(/<([a-zA-Z][a-zA-Z0-9]*)\b(?![^>]*:)([^>]*)>/g, `<${prefix}:$1$2>`);
+    
+    // Replace closing tags that don't have a namespace prefix (no colon in the tag name)
+    xml = xml.replace(/<\/([a-zA-Z][a-zA-Z0-9]*)(?!:)>/g, `</${prefix}:$1>`);
+    
+    return xml;
 }
 
 function getChainInfo(xml: any): PreviousInvoiceId {
@@ -394,12 +471,12 @@ function getCancelChainInfo(xml: any): PreviousInvoiceId {
 
 function getWSInfo(isTesting: boolean): { wsld: string; endpoint: string } {
     const wsld = isTesting
-        ? "https://prewww2.aeat.es/static_files/common/internet/dep/aplicaciones/es/aeat/tikeV1.0/cont/ws/SistemaFacturacion.wsdl"
-        : "https://www2.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tikeV1.0/cont/ws/SistemaFacturacion.wsdl";
+        ? "https://prewww1.aeat.es/static_files/common/internet/dep/aplicaciones/es/aeat/tikeV1.0/cont/ws/SistemaFacturacion.wsdl"
+        : "https://www1.agenciatributaria.gob.es/static_files/common/internet/dep/aplicaciones/es/aeat/tikeV1.0/cont/ws/SistemaFacturacion.wsdl";
     
     const endpoint = isTesting
-        ? "https://prewww2.aeat.es/wlpl/TIKE-CONT/ws/SistemaFacturacion/VerifactuSOAP"
-        : "https://www2.agenciatributaria.gob.es/wlpl/TIKE-CONT/ws/SistemaFacturacion/VerifactuSOAP";
+        ? "https://prewww1.aeat.es/wlpl/TIKE-CONT/ws/SistemaFacturacion/VerifactuSOAP"
+        : "https://www1.agenciatributaria.gob.es/wlpl/TIKE-CONT/ws/SistemaFacturacion/VerifactuSOAP";
     
     return { wsld, endpoint };
 }
@@ -426,10 +503,12 @@ export async function createInvoice(
         ["NombreRazonEmisor", invoice.issuer.name, toStr120],
         ["TipoFactura", invoice.type, toString],
         ["DescripcionOperacion", invoice.description?.text || "", toStr500],
-        ["EmitidaPorTerceroODestinatario", invoice.issuedBy || "N", toString],
+        ["EmitidaPorTerceroODestinatario", invoice.issuedBy || "", toString],
         ["CuotaTotal", invoice.amount, round2ToString],
         ["ImporteTotal", invoice.total, round2ToString],
         ["FechaHoraHusoGenRegistro", dateGenReg, toStr30],
+        ["Subsanacion", invoice.id.replacement ? "S" : "", toStr30],
+        ["TipoRectificativa", invoice.type === "R1" ? "I" : "", toStr2]
     ];
     
     updateDocument(xml, selectorsToValues);
@@ -513,7 +592,8 @@ export async function createInvoice(
         chainInfo,
         verifactuXml,
         wsld,
-        endpoint
+        endpoint,
+        hash
     };
 }
 
@@ -582,6 +662,7 @@ export async function cancelInvoice(
         chainInfo,
         verifactuXml,
         wsld,
-        endpoint
+        endpoint,
+        hash
     };
 }
